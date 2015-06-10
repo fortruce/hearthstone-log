@@ -1,0 +1,18 @@
+Player EntityID=2 PlayerID=1 GameAccountId=[hi=144115193835963207 lo=30629967]
+    tag=TIMEOUT value=75
+    tag=PLAYSTATE value=PLAYING
+    tag=CURRENT_PLAYER value=1
+    tag=FIRST_PLAYER value=1
+    tag=HERO_ENTITY value=4
+    tag=MAXHANDSIZE value=10
+    tag=STARTHANDSIZE value=4
+    tag=PLAYER_ID value=1
+    tag=TEAM_ID value=1
+    tag=ZONE value=PLAY
+    tag=CONTROLLER value=1
+    tag=ENTITY_ID value=2
+    tag=MAXRESOURCES value=10
+    tag=CARDTYPE value=PLAYER
+    tag=NUM_TURNS_LEFT value=1
+    tag=MULLIGAN_STATE value=INPUT
+    tag=NUM_CARDS_DRAWN_THIS_TURN value=3
