@@ -1,11 +1,8 @@
-var Transform = require('stream').Transform;
-var fs = require('fs');
+var Writable = require('stream').Writable;
 var split = require('split');
 var through = require('through2');
-var debug = require('debug');
 var assert = require('assert');
-
-var logFile = 'output_log.txt';
+var util = require('util');
 
 function filter(regex) {
   return through(function (chunk, enc, callback) {
@@ -17,26 +14,12 @@ function filter(regex) {
   });
 }
 
-function join(sep) {
-  var start = true;
-  return through(function (chunk, enc, callback) {
-    if (start) {
-      this.push(chunk);
-      start = false;
-    } else {
-      this.push(sep);
-      this.push(chunk);
-    }
-    callback();
-  });
-}
-
 function countIndent(s) {
   return s.length - s.trimLeft().length;
 }
 
 function Node(chunk, parent) {
-  this.value = chunk.value;
+  this.raw = chunk.raw;
   this.level = chunk.level;
   this.parent = parent;
   this.children = [];
@@ -46,16 +29,16 @@ Node.prototype.addChild = function(chunk) {
   var node = new Node(chunk, this);
   this.children.push(node);
   return node;
-}
+};
 
 Node.prototype.neuter = function() {
   var n = Object.create(null);
-  n.value = this.value;
+  n.raw = this.raw;
   if (this.children.length > 0) {
     n.children = this.children.map(function (x) { return x.neuter(); });
   }
   return n;
-}
+};
 
 function Tree(chunk) {
   this.root = new Node(chunk);
@@ -70,67 +53,76 @@ Tree.prototype.push = function(chunk) {
   // add chunk to the current elements parent
   // this chunk is now cur
   this.cur = this.cur.parent.addChild(chunk);
-}
+};
 
 // Indent tree with current chunk
 Tree.prototype.indent = function(chunk) {
   this.cur = this.cur.addChild(chunk);
-}
+};
 
 Tree.prototype.deindent = function(level) {
   while(this.cur.level > level) {
     this.cur = this.cur.parent;
   }
-}
+};
 
 Tree.prototype.level = function() {
   return this.cur.level;
-}
+};
 
-Tree.prototype.toString = function() {
-  return JSON.stringify(this.root.neuter(), undefined, 2);
-}
+Tree.prototype.neuter = function() {
+  return this.root.neuter();
+};
 
+// Parse tracks parent/child relationships indicated by indented text.
+// The input must first be 'treeified'.
 function parse() {
-  var tree = undefined;
-  return through(function (chunk, enc, callback) {
-    chunk = JSON.parse(chunk);
-    if (!tree) {
-      tree = new Tree(chunk);
-      return callback();
-    }
-
-    if (chunk.level === 0) {
-      if (tree) {
-        this.push(tree.toString());
+  var tree;
+  return through({objectMode: true},
+    function (chunk, enc, callback) {
+      chunk = JSON.parse(chunk);
+      if (!tree) {
+        tree = new Tree(chunk);
+        return callback();
       }
 
-      tree = new Tree(chunk);
-    } else if (chunk.level === tree.level()) {
-      tree.push(chunk);
-    } else if (chunk.level > tree.level()) {
-      tree.indent(chunk);
-    } else if (chunk.level < tree.level()) {
-      tree.deindent(chunk.level);
-      tree.push(chunk);
-    }
+      if (chunk.level === 0) {
+        if (tree) {
+          this.push(tree.neuter());
+        }
 
-    return callback();
-  });
+        tree = new Tree(chunk);
+      } else if (chunk.level === tree.level()) {
+        tree.push(chunk);
+      } else if (chunk.level > tree.level()) {
+        tree.indent(chunk);
+      } else if (chunk.level < tree.level()) {
+        tree.deindent(chunk.level);
+        tree.push(chunk);
+      }
+
+      return callback();
+    }
+  );
 }
 
-var treeify = through(function (chunk, enc, callback) {
-  var s = chunk.toString();
-  this.push(JSON.stringify({'value': s,
-                            'level': countIndent(s)}));
-  return callback();
-});
+// Treeify converts incoming lines of text into objects tracking their indentation.
+function treeify() {
+  return through({objectMode: true},
+    function (chunk, enc, callback) {
+      var s = chunk.toString();
+      this.push(JSON.stringify({
+        'raw': s.trim(),
+        'level': countIndent(s)
+      }));
+      return callback();
+    }
+  );
+}
 
-var levels = {};
-fs.createReadStream(logFile)
-  .pipe(split())
+module.exports = function (stream) {
+  return stream.pipe(split())
   .pipe(filter(/^\[(Power|Zone)\] .*? - (.*)$/))
-  .pipe(treeify)
-  .pipe(parse())
-  .pipe(join('\n'))
-  .pipe(fs.createWriteStream('parseTestOut.txt'));
+  .pipe(treeify())
+  .pipe(parse());
+};
