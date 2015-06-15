@@ -1,5 +1,4 @@
 var assign = require('object-assign');
-var debug = require('debug')('hs');
 
 function tokenize(header) {
   var elements = [];
@@ -43,7 +42,7 @@ function Entity(entityStr) {
 }
 
 function parseTagArray(tokens) {
-  debug('parseTagArray', tokens.join(', '));
+  console.log('parseTagArray', tokens.join(', '));
   var o = Object.create(null);
   do {
     o = assign(o, parseKeyValuePair(tokens));
@@ -54,7 +53,7 @@ function parseTagArray(tokens) {
 }
 
 function parseValue(tokens) {
-  debug('parseValue', tokens.join(', '));
+  console.log('parseValue', tokens.join(', '));
   var val = tokens.shift();
   if (val === '[') {
     val = parseTagArray(tokens);
@@ -64,7 +63,7 @@ function parseValue(tokens) {
     // alt-solution: change tokenizer to actual token elements
     // that indicate if they are keys (look ahead for '=')
     while (tokens[1] !== undefined && tokens[1] !== '=' && tokens[0] !== ']') {
-      debug(tokens);
+      console.log(tokens);
       val += ' ' + tokens.shift();
     }
   }
@@ -72,7 +71,7 @@ function parseValue(tokens) {
 }
 
 function parseKeyValuePair(tokens) {
-  debug('parseKeyValuePair:', tokens.join(', '));
+  console.log('parseKeyValuePair:', tokens.join(', '));
 
   var key = tokens.shift();
   assert(tokens.shift() === '=');
@@ -90,11 +89,44 @@ function parseTagChange(tokens) {
   return o;
 }
 
+function parseSimpleValue(tokens) {
+  var v = tokens.shift();
+  if (!isNaN(v)) {
+    return parseInt(v, 10);
+  }
+  return v;
+}
+
+function parseTagValue(tokens) {
+  return tokens.shift();
+}
+
+function parseTagValuePair(tokens) {
+  // tag=CARDTYPE value=GAME
+  var o = Object.create(null);
+
+  assert(tokens.shift() === 'tag');
+  assert(tokens.shift() === '=');
+
+  var tag = parseTagValue(tokens);
+  o.tag = tag;
+
+  assert(tokens.shift() === 'value');
+  assert(tokens.shift() === '=');
+
+  var value = parseSimpleValue(tokens);
+  o.value = value;
+  return o;
+}
+
 function parse(line) {
   var tokens = tokenize(line);
-  switch (tokens.shift()) {
+  switch (tokens[0]) {
   case 'TAG_CHANGE':
+    assert(tokens.shift() === 'TAG_CHANGE');
     return parseTagChange(tokens);
+  case 'tag':
+    return parseTagValuePair(tokens);
   default:
     return undefined;
   }
@@ -105,20 +137,9 @@ module.exports = {
   parseKeyValuePair,
   parseTagArray,
   parseTagChange,
+  parseTagValuePair,
+  parseSimpleValue,
   Entity,
   tokenize,
   parse
 };
-
-
-// require('babel/register');
-// var hs = require('./hearthstone');
-// var entityStr = fs.readFileSync('entity.txt').toString();
-// var entity = new hs.Entity(entityStr);
-// 
-/*require('babel/register');
-var hs = require('./hearthstone');
-var fs = require('fs');
-var f = fs.readFileSync('tagchange.txt');
-f = f.toString().split('\r\n');
-hs.parse(f[6]);*/
