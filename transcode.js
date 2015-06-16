@@ -76,7 +76,7 @@ Tree.prototype.neuter = function() {
 
 // Parse tracks parent/child relationships indicated by indented text.
 // The input must first be 'treeified'.
-function parse() {
+function transcode() {
   var tree;
   return through({objectMode: true},
     function (chunk, enc, callback) {
@@ -124,5 +124,5 @@ module.exports = function (stream) {
   return stream.pipe(split())
   .pipe(filter(/^\[(Power|Zone)\] .*? - (.*)$/))
   .pipe(treeify())
-  .pipe(parse());
+  .pipe(transcode());
 };
