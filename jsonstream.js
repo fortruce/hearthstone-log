@@ -1,3 +1,6 @@
+var Writable = require('stream').Writable;
+var util = require('util');
+
 // JsonStream is a writable stream that collects multiple json object chunks
 // and concats them into a single array of json objects, calling the callback
 // on the result.
