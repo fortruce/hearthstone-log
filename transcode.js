@@ -1,17 +1,22 @@
-var Writable = require('stream').Writable;
 var split = require('split');
 var through = require('through2');
 var assert = require('assert');
-var util = require('util');
 
-function filter(regex) {
-  return through(function (chunk, enc, callback) {
-    var res = chunk.toString().match(regex);
-    if (res) {
-      this.push(res[2]);
+function filter() {
+  return through({objectMode: true},
+    function (chunk, enc, callback) {
+      var res = chunk.toString().match(/^\[(Power|Zone)\] (.*?) - (.*)$/);
+      if (res) {
+        this.push({
+          log: res[1],
+          func: res[2],
+          raw: res[3].trim(),
+          level: countIndent(res[3])
+        });
+      }
+      callback();
     }
-    callback();
-  });
+  );
 }
 
 function countIndent(s) {
@@ -20,6 +25,8 @@ function countIndent(s) {
 
 function Node(chunk, parent) {
   this.raw = chunk.raw;
+  this.func = chunk.func;
+  this.log = chunk.log
   this.level = chunk.level;
   this.parent = parent;
   this.children = [];
@@ -34,6 +41,8 @@ Node.prototype.addChild = function(chunk) {
 Node.prototype.neuter = function() {
   var n = Object.create(null);
   n.raw = this.raw;
+  n.log = this.log;
+  n.func = this.func;
   if (this.children.length > 0) {
     n.children = this.children.map(function (x) { return x.neuter(); });
   }
@@ -80,7 +89,6 @@ function transcode() {
   var tree;
   return through({objectMode: true},
     function (chunk, enc, callback) {
-      chunk = JSON.parse(chunk);
       if (!tree) {
         tree = new Tree(chunk);
         return callback();
@@ -106,23 +114,8 @@ function transcode() {
   );
 }
 
-// Treeify converts incoming lines of text into objects tracking their indentation.
-function treeify() {
-  return through({objectMode: true},
-    function (chunk, enc, callback) {
-      var s = chunk.toString();
-      this.push(JSON.stringify({
-        'raw': s.trim(),
-        'level': countIndent(s)
-      }));
-      return callback();
-    }
-  );
-}
-
 module.exports = function (stream) {
   return stream.pipe(split())
-  .pipe(filter(/^\[(Power|Zone)\] .*? - (.*)$/))
-  .pipe(treeify())
+  .pipe(filter())
   .pipe(transcode());
 };
