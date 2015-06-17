@@ -1,13 +1,17 @@
 var tokenize = require('./tokenize');
 var taxonomize = require('./taxonomize');
-var parser = require('./parser');
+var utils = require('./utils');
 var assign = require('object-assign');
 var assert = require('assert');
 var debug = require('debug')('Parse.Power');
 
+// constants
+var TAXONOMIES = require('../constants').TAXONOMIES.POWER;
+var LOG = require('../constants').LOG.POWER;
+
 function parseTagChange(tokens) {
   assert(tokens.shift() === 'TAG_CHANGE');
-  return parser.parseKeyValues(tokens);
+  return utils.parseKeyValues(tokens);
 }
 
 function parseEntity(tokens) {
@@ -19,7 +23,7 @@ function parseEntity(tokens) {
     assert(tokens.shift() === '-');
     assert(tokens.shift() === 'Creating');
   }
-  var entity = parser.parseKeyValues(tokens);
+  var entity = utils.parseKeyValues(tokens);
   entity.entity = entityType;
   return entity;
 }
@@ -36,30 +40,37 @@ module.exports = function parse(chunk, classify) {
   var result;
 
   switch(tokens[0]) {
-  case 'TAG_CHANGE':
+
+  case LOG.TAG_CHANGE:
     result = parseTagChange(tokens);
-    taxonomy = 'TAG_CHANGE';
+    taxonomy = TAXONOMIES.TAG_CHANGE;
     break;
-  case 'tag':
-    result = parser.parseTagValuePair(tokens);
-    taxonomy = 'TAG';
+
+  case LOG.TAG:
+    result = utils.parseTagValuePair(tokens);
+    taxonomy = TAXONOMIES.TAG;
     break;
-  case 'GameEntity':
+
+  case LOG.GAME_ENTITY:
     result = parseEntity(tokens);
-    taxonomy = 'GAME_ENTITY';
+    taxonomy = TAXONOMIES.GAME_ENTITY;
     break;
-  case 'Player':
+
+  case LOG.PLAYER:
     result = parseEntity(tokens);
-    taxonomy = 'PLAYER_ENTITY';
+    taxonomy = TAXONOMIES.PLAYER_ENTITY;
     break;
-  case 'FULL_ENTITY':
+
+  case LOG.FULL_ENTITY:
     result = parseEntity(tokens);
-    taxonomy = 'FULL_ENTITY';
+    taxonomy = TAXONOMIES.FULL_ENTITY;
     break;
-  case 'CREATE_GAME':
+
+  case LOG.CREATE_GAME:
     result = parseCreateGame(tokens);
-    taxonomy = 'CREATE_GAME';
+    taxonomy = TAXONOMIES.CREATE_GAME;
     break;
+
   default:
     debug('no parser found:', chunk.raw);
     return undefined;

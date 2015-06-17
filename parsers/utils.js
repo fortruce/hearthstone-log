@@ -72,7 +72,10 @@ function parseValue(tokens) {
     // for values with spaces in their names: 'name=Defias Bandit id=73'
     // alt-solution: change tokenizer to actual token elements
     // that indicate if they are keys (look ahead for '=')
-    while (tokens[1] !== undefined && tokens[1] !== '=' && tokens[0] !== ']') {
+    while (tokens[1] !== undefined &&
+           tokens[1] !== '=' &&
+           tokens[0] !== ']' &&
+           tokens[0] !== '[') {
       val += ' ' + tokens.shift();
     }
   }
