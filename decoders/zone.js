@@ -1,5 +1,6 @@
 var zoneLog = require('../logs/zone');
 var parse = require('../parsers/zone');
+var utils = require('./utils');
 
 var debug = require('debug')('Decode.Zone');
 var assert = require('assert');
@@ -18,6 +19,9 @@ module.exports = function decode(chunk) {
   switch (key.taxonomy) {
   case 'TRANSITIONING':
     ev = decodeTransition(chunk);
+    break;
+  case 'ZONE_CHANGE':
+    ev = utils.decodeNoChildren(chunk, key);
     break;
   default:
     debug('no decoder found:', key.taxonomy);

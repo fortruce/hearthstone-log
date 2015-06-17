@@ -1,5 +1,6 @@
 var powerLog = require('../logs/power');
 var parse = require('../parsers/power');
+var utils = require('./utils');
 
 var debug = require('debug')('Decode.Power');
 var assert = require('assert');
@@ -31,11 +32,6 @@ function decodeCreateGame(chunk) {
   }
 }
 
-function decodeTagChange(chunk) {
-  assert(chunk.children == undefined);
-  return parse(chunk);
-}
-
 module.exports = function decode (chunk) {
   var key = parse(chunk, true);
   if (!key)
@@ -44,7 +40,7 @@ module.exports = function decode (chunk) {
   var ev;
   switch (key.taxonomy) {
   case 'TAG_CHANGE':
-    ev = decodeTagChange(chunk);
+    ev = utils.decodeNoChildren(chunk, key);
     break;
   case 'FULL_ENTITY':
     ev = decodeEntity(chunk);
