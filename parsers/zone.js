@@ -97,7 +97,7 @@ module.exports = function parse(chunk, classify) {
       taxonomy = TAXONOMIES.ZONE_CHANGE;
       break;
 
-    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES)):
+    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES):
       result = parseLocalChange(tokens);
       taxonomy = TAXONOMIES.LOCAL_CHANGE;
       break;
