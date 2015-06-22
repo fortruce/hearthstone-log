@@ -103,9 +103,13 @@ module.exports = function parse(chunk, classify) {
   case KEYWORDS.M_ID:
   case KEYWORDS.TASK_LIST_ID:
   case KEYWORDS.SRC_ZONE:
+  case KEYWORDS.DST_ZONE:
   case KEYWORDS.SRC_POS:
+  case KEYWORDS.TRIGGER_ENTITY:
   case KEYWORDS.CHANGE_LIST_ID:
   case KEYWORDS.BRACKET_ID:
+  case KEYWORDS.START:
+  case KEYWORDS.END:
     return undefined;
 
   default:

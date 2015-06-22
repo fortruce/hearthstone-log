@@ -33,6 +33,11 @@ function parseCreateGame(tokens) {
   return {};
 }
 
+function parseAction(tokens) {
+  assert(tokens.shift() === 'ACTION_START');
+  return utils.parseKeyValues(tokens);
+}
+
 module.exports = function parse(chunk, classify) {
   var tokens = tokenize(chunk.raw);
 
@@ -71,9 +76,18 @@ module.exports = function parse(chunk, classify) {
     taxonomy = TAXONOMIES.CREATE_GAME;
     break;
 
+  case KEYWORDS.ACTION_START:
+    result = parseAction(tokens);
+    taxonomy = TAXONOMIES.ACTION;
+    break;
+
   // ignored lines (unimportant)
   case KEYWORDS.M_CURRENT_TASK_LIST:
   case KEYWORDS.COUNT:
+  case KEYWORDS.ID:
+  case KEYWORDS.SELECTED_OPTION:
+  case KEYWORDS.ACTION_START_TASKLIST:
+  case KEYWORDS.ACTION_END:
     return undefined;
 
   default:
