@@ -75,7 +75,8 @@ function parseValue(tokens) {
     while (tokens[1] !== undefined &&
            tokens[1] !== '=' &&
            tokens[0] !== ']' &&
-           tokens[0] !== '[') {
+           tokens[0] !== '[' &&
+           tokens[0] !== ')') {
       val += ' ' + tokens.shift();
     }
   }

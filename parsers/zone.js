@@ -7,11 +7,12 @@ var debug = require('debug')('Parse.Zone');
 
 //constants
 var TAXONOMIES = require('../constants').TAXONOMIES.ZONE;
-var LOG = require('../constants').LOG.ZONE;
+var KEYWORDS = require('../constants').KEYWORDS.ZONE;
 
 function parseZone(tokens) {
   switch(tokens[0]) {
   case '':
+  case undefined:
     tokens.shift();
     return {};
   case 'FRIENDLY':
@@ -19,20 +20,22 @@ function parseZone(tokens) {
     var o = {
       field: tokens.shift(),
       zone: tokens.shift(),
-    }
+    };
     if (tokens[0] === '(') {
       // card type qualifier is present
       assert(tokens.shift() === '(');
       var cardType = utils.parseValue(tokens);
       assert(['Hero', 'Hero Power', 'Weapon'].indexOf(cardType) !== -1);
       assert(tokens.shift() === ')');
+      if (tokens[0] === '')
+        assert(tokens.shift() === '');
       o.cardType = cardType;
     }
     return o;
   default:
     var n = tokens.shift();
     assert(!isNaN(n));
-    return {index: n}
+    return {index: n};
   }
 }
 
@@ -82,24 +85,24 @@ module.exports = function parse(chunk, classify) {
   var result;
 
   switch(tokens[0]) {
-  case LOG.TRANSITIONING:
+  case KEYWORDS.TRANSITIONING:
     result = parseTransition(tokens);
     taxonomy = 'TRANSITIONING';
     break;
 
-  case LOG.ID:
+  case KEYWORDS.ID:
     switch(true) {
-    case !!chunk.func.match(/ProcessChanges/):
+    case !!chunk.func.match(KEYWORDS.PROCESS_CHANGES):
       result = parseZoneChange(tokens);
       taxonomy = TAXONOMIES.ZONE_CHANGE;
       break;
 
-    case !!chunk.func.match(/LocalChangesFromTrigger/):
+    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES)):
       result = parseLocalChange(tokens);
       taxonomy = TAXONOMIES.LOCAL_CHANGE;
       break;
 
-    case !!chunk.func.match(/Finish/):
+    case !!chunk.func.match(KEYWORDS.FINISH):
       result = parseFinishChange(tokens);
       taxonomy = TAXONOMIES.FINISH_CHANGE;
       break;
@@ -116,4 +119,4 @@ module.exports = function parse(chunk, classify) {
   }
 
   return classify ? taxonomize(result, taxonomy) : result;
-}
+};

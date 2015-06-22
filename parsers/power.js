@@ -7,7 +7,7 @@ var debug = require('debug')('Parse.Power');
 
 // constants
 var TAXONOMIES = require('../constants').TAXONOMIES.POWER;
-var LOG = require('../constants').LOG.POWER;
+var KEYWORDS = require('../constants').KEYWORDS.POWER;
 
 function parseTagChange(tokens) {
   assert(tokens.shift() === 'TAG_CHANGE');
@@ -41,32 +41,32 @@ module.exports = function parse(chunk, classify) {
 
   switch(tokens[0]) {
 
-  case LOG.TAG_CHANGE:
+  case KEYWORDS.TAG_CHANGE:
     result = parseTagChange(tokens);
     taxonomy = TAXONOMIES.TAG_CHANGE;
     break;
 
-  case LOG.TAG:
+  case KEYWORDS.TAG:
     result = utils.parseTagValuePair(tokens);
     taxonomy = TAXONOMIES.TAG;
     break;
 
-  case LOG.GAME_ENTITY:
+  case KEYWORDS.GAME_ENTITY:
     result = parseEntity(tokens);
     taxonomy = TAXONOMIES.GAME_ENTITY;
     break;
 
-  case LOG.PLAYER:
+  case KEYWORDS.PLAYER:
     result = parseEntity(tokens);
     taxonomy = TAXONOMIES.PLAYER_ENTITY;
     break;
 
-  case LOG.FULL_ENTITY:
+  case KEYWORDS.FULL_ENTITY:
     result = parseEntity(tokens);
     taxonomy = TAXONOMIES.FULL_ENTITY;
     break;
 
-  case LOG.CREATE_GAME:
+  case KEYWORDS.CREATE_GAME:
     result = parseCreateGame(tokens);
     taxonomy = TAXONOMIES.CREATE_GAME;
     break;
