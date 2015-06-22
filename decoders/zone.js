@@ -5,8 +5,11 @@ var utils = require('./utils');
 var debug = require('debug')('Decode.Zone');
 var assert = require('assert');
 
+// constants
+var TAXONOMIES = require('../constants').TAXONOMIES.ZONE;
+
 function decodeTransition(chunk) {
-  assert(chunk.children == undefined);
+  assert(chunk.children === undefined);
   return parse(chunk);
 }
 
@@ -17,10 +20,10 @@ module.exports = function decode(chunk) {
 
   var ev;
   switch (key.taxonomy) {
-  case 'TRANSITIONING':
+  case TAXONOMIES.TRANSITIONING:
     ev = decodeTransition(chunk);
     break;
-  case 'ZONE_CHANGE':
+  case TAXONOMIES.ZONE_CHANGE:
     ev = utils.decodeNoChildren(chunk, key);
     break;
   default:
@@ -28,6 +31,5 @@ module.exports = function decode(chunk) {
     return;
   }
 
-  // TODO: fire event to the zoneLog
-  debug('decoded:', ev);
-}
+  zoneLog.emit(key.taxonomy, ev);
+};

@@ -5,6 +5,9 @@ var utils = require('./utils');
 var debug = require('debug')('Decode.Power');
 var assert = require('assert');
 
+// constants
+var TAXONOMIES = require('../constants').TAXONOMIES.POWER;
+
 function decodeTags(chunk) {
   return chunk.children.map(function (c) {
     return parse(c);
@@ -29,7 +32,7 @@ function decodeCreateGame(chunk) {
   return {
     game: game,
     players: [player1, player2]
-  }
+  };
 }
 
 module.exports = function decode (chunk) {
@@ -39,13 +42,13 @@ module.exports = function decode (chunk) {
 
   var ev;
   switch (key.taxonomy) {
-  case 'TAG_CHANGE':
+  case TAXONOMIES.TAG_CHANGE:
     ev = utils.decodeNoChildren(chunk, key);
     break;
-  case 'FULL_ENTITY':
+  case TAXONOMIES.FULL_ENTITY:
     ev = decodeEntity(chunk);
     break;
-  case 'CREATE_GAME':
+  case TAXONOMIES.CREATE_GAME:
     ev = decodeCreateGame(chunk);
     break;
   default:
@@ -53,6 +56,5 @@ module.exports = function decode (chunk) {
     return;
   }
 
-  // TODO: fire event to the powerLog
-  debug('decoded:', ev);
+  powerLog.emit(key.taxonomy, ev);
 };

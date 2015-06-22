@@ -5,6 +5,9 @@ var Writable = require('stream').Writable;
 var power = require('./power');
 var zone = require('./zone');
 
+// constants
+var LOGS = require('../constants').LOGS;
+
 function Decode() {
   if (!(this instanceof Decode))
     return new Decode();
@@ -14,11 +17,11 @@ function Decode() {
 util.inherits(Decode, Writable);
 
 Decode.prototype._write = function(chunk, enc, next) {
-  switch(chunk.log) {
-  case 'Power':
+  switch(chunk.log.toUpperCase()) {
+  case LOGS.POWER:
     power(chunk);
     break;
-  case 'Zone':
+  case LOGS.ZONE:
     zone(chunk);
     break;
   default:
