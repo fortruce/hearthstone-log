@@ -11,12 +11,13 @@ module.exports = {
       CREATE_GAME: null
     }),
     ZONE: keymirror({
+      TRANSITIONING: null,
       ZONE_CHANGE: null,
       LOCAL_CHANGE: null,
       FINISH_CHANGE: null
     })
   },
-  LOG: {
+  KEYWORDS: {
     POWER: {
       TAG_CHANGE: 'TAG_CHANGE',
       TAG: 'tag',
@@ -27,7 +28,16 @@ module.exports = {
     },
     ZONE: {
       TRANSITIONING: 'TRANSITIONING',
-      ID: 'id'
+      ID: 'id',
+      PROCESS_CHANGES: /ProcessChanges/,
+      LOCAL_CHANGES: /LocalChangesFromTrigger/,
+      FINISH: /Finish/
     }
-  }
+  },
+  LOGS: keymirror({
+    ZONE: null,
+    POWER: null,
+    LOADINGSCREEN: null,
+    RACHELLE: null
+  })
 };
