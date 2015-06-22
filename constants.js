@@ -8,7 +8,8 @@ module.exports = {
       GAME_ENTITY: null,
       PLAYER_ENTITY: null,
       FULL_ENTITY: null,
-      CREATE_GAME: null
+      CREATE_GAME: null,
+      ACTION: null
     }),
     ZONE: keymirror({
       TRANSITIONING: null,
@@ -24,7 +25,12 @@ module.exports = {
       FULL_ENTITY: 'FULL_ENTITY',
       CREATE_GAME: 'CREATE_GAME',
       M_CURRENT_TASK_LIST: 'm_currentTaskList',
-      COUNT: 'Count'
+      COUNT: 'Count',
+      ID: 'id',
+      SELECTED_OPTION: 'selectedOption',
+      ACTION_START_TASKLIST: 'actionStart',
+      ACTION_START: 'ACTION_START',
+      ACTION_END: 'ACTION_END'
     },
     ZONE: {
       TRANSITIONING: 'TRANSITIONING',
@@ -35,9 +41,13 @@ module.exports = {
       M_ID: 'm_id',
       TASK_LIST_ID: 'taskListId',
       SRC_ZONE: 'srcZone',
+      DST_ZONE: 'dstZone',
       SRC_POS: 'srcPos',
       CHANGE_LIST_ID: 'changeListId',
-      BRACKET_ID: '['
+      BRACKET_ID: '[',
+      TRIGGER_ENTITY: 'triggerEntity',
+      START: 'START',
+      END: 'END'
     }
   },
   LOGS: keymirror({
