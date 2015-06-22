@@ -1,5 +1,6 @@
 var util = require('util');
 var Writable = require('stream').Writable;
+var debug = require('debug')('Decode.Decode');
 
 // decoders
 var power = require('./power');
