@@ -35,6 +35,18 @@ function decodeCreateGame(chunk) {
   };
 }
 
+function decodeAction(chunk) {
+  var action = parse(chunk);
+  var children = [];
+  if (chunk.children) {
+    children = chunk.children.map(function (c) {
+      return parse(c);
+    });
+  }
+  action.actions = children;
+  return action;
+}
+
 module.exports = function decode (chunk) {
   var key = parse(chunk, true);
   if (!key)
@@ -50,6 +62,9 @@ module.exports = function decode (chunk) {
     break;
   case TAXONOMIES.CREATE_GAME:
     ev = decodeCreateGame(chunk);
+    break;
+  case TAXONOMIES.ACTION:
+    ev = decodeAction(chunk);
     break;
   default:
     debug('no decoder found:', key.taxonomy);
