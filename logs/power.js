@@ -2,12 +2,10 @@ var EventEmitter = require('events').EventEmitter;
 var assign = require('object-assign');
 var keymirror = require('keyMirror');
 
+var EVENTS = require('../constants').TAXONOMIES.POWER;
+
 var Power = assign({}, EventEmitter.prototype, {
-  EVENTS: keymirror({
-    FULL_ENTITY: null,
-    TAG_CHANGE: null,
-    CREATE_GAME: null
-  })
+  EVENTS: EVENTS
 });
 
 module.exports = Power;
