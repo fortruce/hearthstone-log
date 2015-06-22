@@ -1,11 +1,12 @@
 var split = require('split');
 var through = require('through2');
 var assert = require('assert');
+var debug = require('debug')('transcode');
 
 function filter() {
   return through({objectMode: true},
     function (chunk, enc, callback) {
-      var res = chunk.toString().match(/^\[(Power|Zone)\] (.*?) - (.*)$/);
+      var res = chunk.toString().match(/^\[([A-Za-z]*)\] (.*?) - (.*)$/);
       if (res) {
         this.push({
           log: res[1],
