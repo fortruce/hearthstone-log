@@ -71,6 +71,11 @@ module.exports = function parse(chunk, classify) {
     taxonomy = TAXONOMIES.CREATE_GAME;
     break;
 
+  // ignored lines (unimportant)
+  case KEYWORDS.M_CURRENT_TASK_LIST:
+  case KEYWORDS.COUNT:
+    return undefined;
+
   default:
     debug('no parser found:', chunk.raw);
     return undefined;

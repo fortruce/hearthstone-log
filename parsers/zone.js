@@ -70,14 +70,6 @@ function parseZoneChange(tokens) {
   return o;
 }
 
-function parseLocalChange(chunk) {
-  return {};
-}
-
-function parseFinishChange(chunk) {
-  return {};
-}
-
 module.exports = function parse(chunk, classify) {
   var tokens = tokenize(chunk.raw);
 
@@ -87,7 +79,7 @@ module.exports = function parse(chunk, classify) {
   switch(tokens[0]) {
   case KEYWORDS.TRANSITIONING:
     result = parseTransition(tokens);
-    taxonomy = 'TRANSITIONING';
+    taxonomy = TAXONOMIES.TRANSITIONING;
     break;
 
   case KEYWORDS.ID:
@@ -97,21 +89,24 @@ module.exports = function parse(chunk, classify) {
       taxonomy = TAXONOMIES.ZONE_CHANGE;
       break;
 
-    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES):
-      result = parseLocalChange(tokens);
-      taxonomy = TAXONOMIES.LOCAL_CHANGE;
-      break;
-
     case !!chunk.func.match(KEYWORDS.FINISH):
-      result = parseFinishChange(tokens);
-      taxonomy = TAXONOMIES.FINISH_CHANGE;
-      break;
+    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES):
+      return undefined;
 
     default:
       debug('no id parser found:', chunk.func, chunk.raw);
       return undefined;
     }
     break;
+
+  // silently ignore (unimportant log)
+  case KEYWORDS.M_ID:
+  case KEYWORDS.TASK_LIST_ID:
+  case KEYWORDS.SRC_ZONE:
+  case KEYWORDS.SRC_POS:
+  case KEYWORDS.CHANGE_LIST_ID:
+  case KEYWORDS.BRACKET_ID:
+    return undefined;
 
   default:
     debug('no parser found:', chunk.raw);
