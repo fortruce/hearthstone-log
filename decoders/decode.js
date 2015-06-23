@@ -20,10 +20,10 @@ util.inherits(Decode, Writable);
 Decode.prototype._write = function(chunk, enc, next) {
   switch(chunk.log.toUpperCase()) {
   case LOGS.POWER:
-    power(chunk);
+    power.decode(chunk);
     break;
   case LOGS.ZONE:
-    zone(chunk);
+    zone.decode(chunk);
     break;
   default:
     debug('no decoder found:', chunk.log);

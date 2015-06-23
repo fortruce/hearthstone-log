@@ -1,6 +1,7 @@
-var powerLog = require('../logs/power');
 var parse = require('../parsers/power');
 var utils = require('./utils');
+var assign = require('object-assign');
+var EventEmitter = require('events').EventEmitter;
 
 var debug = require('debug')('Decode.Power');
 var assert = require('assert');
@@ -47,29 +48,34 @@ function decodeAction(chunk) {
   return action;
 }
 
-module.exports = function decode (chunk) {
-  var key = parse(chunk, true);
-  if (!key)
-    return;
+var Power = assign({}, EventEmitter.prototype, {
+  EVENTS: TAXONOMIES,
+  decode: function(chunk) {
+    var key = parse(chunk, true);
+    if (!key)
+      return;
 
-  var ev;
-  switch (key.taxonomy) {
-  case TAXONOMIES.TAG_CHANGE:
-    ev = utils.decodeNoChildren(chunk, key);
-    break;
-  case TAXONOMIES.FULL_ENTITY:
-    ev = decodeEntity(chunk);
-    break;
-  case TAXONOMIES.CREATE_GAME:
-    ev = decodeCreateGame(chunk);
-    break;
-  case TAXONOMIES.ACTION:
-    ev = decodeAction(chunk);
-    break;
-  default:
-    debug('no decoder found:', key.taxonomy);
-    return;
+    var ev;
+    switch (key.taxonomy) {
+    case TAXONOMIES.TAG_CHANGE:
+      ev = utils.decodeNoChildren(chunk, key);
+      break;
+    case TAXONOMIES.FULL_ENTITY:
+      ev = decodeEntity(chunk);
+      break;
+    case TAXONOMIES.CREATE_GAME:
+      ev = decodeCreateGame(chunk);
+      break;
+    case TAXONOMIES.ACTION:
+      ev = decodeAction(chunk);
+      break;
+    default:
+      debug('no decoder found:', key.taxonomy);
+      return;
+    }
+
+    this.emit(key.taxonomy, ev);
   }
+});
 
-  powerLog.emit(key.taxonomy, ev);
-};
+module.exports = Power;
