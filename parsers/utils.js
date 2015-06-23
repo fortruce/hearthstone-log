@@ -1,6 +1,11 @@
 var assign = require('object-assign');
-var debug = require('debug')('parser');
+var debug = require('debug')('Parser.utils');
 var assert = require('assert');
+
+function classify(o, t) {
+  o.taxonomy = t;
+  return o;
+}
 
 function parseTagArray(tokens) {
   assert(tokens.shift() === '[');
@@ -90,5 +95,6 @@ module.exports = {
   parseSimpleValue,
   parseTagValue,
   parseTagValuePair,
-  parseValue
+  parseValue,
+  classify
 };

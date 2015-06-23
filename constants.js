@@ -50,6 +50,12 @@ module.exports = {
       END: 'END'
     }
   },
+  EVENTS: keymirror({
+    TAG_CHANGE: null,
+    FULL_ENTITY: null,
+    CREATE_GAME: null,
+    ACTION: null
+  }),
   LOGS: keymirror({
     BOB: null,
     MIKE: null,

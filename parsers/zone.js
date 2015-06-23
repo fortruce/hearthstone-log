@@ -1,13 +1,17 @@
-var tokenize = require('./tokenize');
-var taxonomize = require('./taxonomize');
 var utils = require('./utils');
+var tokenize = require('./tokenize');
 var assign = require('object-assign');
 var assert = require('assert');
-var debug = require('debug')('Parse.Zone');
+var debug = require('debug')('Handler.Zone');
 
-//constants
-var TAXONOMIES = require('../constants').TAXONOMIES.ZONE;
-var KEYWORDS = require('../constants').KEYWORDS.ZONE;
+var constants = require('../constants');
+var KEYWORDS = constants.KEYWORDS.ZONE;
+var TAXONOMIES = constants.TAXONOMIES.ZONE;
+var EVENTS = constants.EVENTS;
+
+/*
+          PARSER FUNCTIONS
+ */
 
 function parseZone(tokens) {
   switch(tokens[0]) {
@@ -70,52 +74,70 @@ function parseZoneChange(tokens) {
   return o;
 }
 
-module.exports = function parse(chunk, classify) {
+/*
+          DECODER FUNCTIONS
+ */
+
+function decodeTransition(chunk) {
+  assert(chunk.children === undefined);
+  return parse(chunk);
+}
+
+function parse(chunk) {
   var tokens = tokenize(chunk.raw);
-
-  var taxonomy;
-  var result;
-
   switch(tokens[0]) {
-  case KEYWORDS.TRANSITIONING:
-    result = parseTransition(tokens);
-    taxonomy = TAXONOMIES.TRANSITIONING;
-    break;
+    case KEYWORDS.TRANSITIONING:
+      return utils.classify(parseTransition(tokens), TAXONOMIES.TRANSITIONING);
+    case KEYWORDS.ID:
+      switch(true) {
+        case !!chunk.func.match(KEYWORDS.PROCESS_CHANGES):
+          return utils.classify(parseZoneChange(tokens), TAXONOMIES.ZONE_CHANGE);
 
-  case KEYWORDS.ID:
-    switch(true) {
-    case !!chunk.func.match(KEYWORDS.PROCESS_CHANGES):
-      result = parseZoneChange(tokens);
-      taxonomy = TAXONOMIES.ZONE_CHANGE;
+        case !!chunk.func.match(KEYWORDS.FINISH):
+        case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES):
+          return undefined;
+
+        default:
+          debug('No parser found (id):', tokens);
+          return undefined;
+      }
       break;
 
-    case !!chunk.func.match(KEYWORDS.FINISH):
-    case !!chunk.func.match(KEYWORDS.LOCAL_CHANGES):
+    // silently ignore (unimportant log)
+    case KEYWORDS.M_ID:
+    case KEYWORDS.TASK_LIST_ID:
+    case KEYWORDS.SRC_ZONE:
+    case KEYWORDS.DST_ZONE:
+    case KEYWORDS.SRC_POS:
+    case KEYWORDS.TRIGGER_ENTITY:
+    case KEYWORDS.CHANGE_LIST_ID:
+    case KEYWORDS.BRACKET_ID:
+    case KEYWORDS.START:
+    case KEYWORDS.END:
       return undefined;
 
     default:
-      debug('no id parser found:', chunk.func, chunk.raw);
+      debug('No parser found:', tokens[0]);
       return undefined;
-    }
-    break;
-
-  // silently ignore (unimportant log)
-  case KEYWORDS.M_ID:
-  case KEYWORDS.TASK_LIST_ID:
-  case KEYWORDS.SRC_ZONE:
-  case KEYWORDS.DST_ZONE:
-  case KEYWORDS.SRC_POS:
-  case KEYWORDS.TRIGGER_ENTITY:
-  case KEYWORDS.CHANGE_LIST_ID:
-  case KEYWORDS.BRACKET_ID:
-  case KEYWORDS.START:
-  case KEYWORDS.END:
-    return undefined;
-
-  default:
-    debug('no parser found:', chunk.raw);
-    return undefined;
   }
+}
 
-  return classify ? taxonomize(result, taxonomy) : result;
+function decode(tree) {
+  var res = parse(tree);
+  if (!res)
+    return undefined;
+
+  switch (res.taxonomy) {
+    case TAXONOMIES.TRANSITIONING:
+      return [EVENTS.TRANSITION, decodeTransition(tree)];
+    case TAXONOMIES.ZONE_CHANGE:
+      return [EVENTS.ZONE_CHANGE, res];
+    default:
+      debug('No decoder found:', res.taxonomy);
+      return undefined;
+  }
+}
+
+module.exports = {
+  decode
 };
