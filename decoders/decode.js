@@ -26,7 +26,9 @@ Decode.prototype._write = function(chunk, enc, next) {
     zone.decode(chunk);
     break;
   default:
-    debug('no decoder found:', chunk.log);
+    if (chunk.log.toUpperCase() in LOGS)
+      break;
+    debug('Unknown Log:', chunk.log);
     break;
   }
 
